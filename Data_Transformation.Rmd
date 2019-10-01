@@ -1,15 +1,14 @@
 ---
-title: "R Notebook: Data Transformation"
-output: html_notebook
+title: 'R Notebook: Data Transformation'
+output:
+  html_document:
+    df_print: paged
 ---
 ##Intro
 Need to create new variables or summaries or rename the variables or summaries. 
 ```{r}
 library(nycflights13)
 library(tidyverse)
-?flights
-nycflights13::flights
-View(flights)
 ```
 
 ##dplyr basics 
@@ -19,3 +18,157 @@ View(flights)
 * _mutate_ create new variables with functions of existing variables 
 * _summarize()_ collapse many values down to one summary 
 * all can be used with _group_by()_ 
+
+##Filter rows with filter()
+This functions allows you to subset observations based on their values 
+* the first argument is the name of the data frame 
+* second is a subsequent arguments are the expressions that filter the data frame 
+
+Example: 
+```{r}
+filter(flights, month == 1, day == 1)
+```
+
+Running this line of code makes dplyr execute the filtering operation and returns a new data frame. 
+* dplyr functions never modify their inputs so if you want to save the result, you'll need to use the assignment operator: <- 
+```{r}
+jan1 <- filter(flights, month == 1, day == 1)
+```
+
+R can either print the variable or save them to a variable. To do both you need to: 
+```{r}
+(dec25 <- filter(flights, month == 12, day == 25))
+```
+
+##Comparisons 
+
+In order to use filtering effectively you need to know how to select the observations that you want using the comparisons operators. 
+* Don'rely on == for an approximation use _near()_ 
+```{r}
+near(sqrt(2) ^ 2, 2)
+near(1 / 49 * 49, 1)
+```
+
+##Logical operators 
+Using Boolean operators for the types of combinations. 
+```{r}
+filter(flights, month == 12 | month == 12)
+```
+
+```{r}
+nov_dec <- filter(flights, month %in% c(11, 12))
+```
+
+Use the code above to select every row where x is one of the values in y. 
+Sometimes you can simplify complicated subsetting by remembering de Morgan's law: 1(x & y) is the same as !x | !y and !(x | y) is the same as !x & !y. 
+* if you wanted to find flights that weren't delayed (on arrival or departure) by more then 2 hours, you can use either of the followinf 2 filter: 
+
+```{r}
+filter(flights, !(arr_delay > 120 | dep_delay > 120))
+filter(flights, arr_delay <= 120, dep_delay <= 120)
+```
+
+##Missing Values 
+
+Use _is.na()_ to determine if a value is missing. 
+```{r}
+is.na(nov_dec)
+```
+
+Ask expilcitly if you want missing values to be included. 
+
+##Exercises 
+1. Find all flights that: had an arrival delay of two or more hours. 
+
+```{r}
+filter(flights, (arr_delay > 120))
+```
+
+flew to houston 
+```{r}
+filter(flights, (dest == "IAH"))
+filter(flights, (dest == "HOU"))
+```
+
+##Arrange rows with arrange()
+Works similar to _filter()_ excepts it changes the order of the selected rows. 
+```{r}
+arrange(flights, year, month, day)
+```
+
+
+Use _desc()_ to reoirder by a column in descending order 
+```{r}
+arrange(flights, desc(dep_delay))
+```
+Missing values are sorted at the end: 
+```{r}
+df <- tibble(x = c(5, 2, NA))
+arrange(df, x)
+```
+
+```{r}
+arrange(df, desc(x))
+```
+
+##Exercises 
+1. How could you use _arrange()_ to sort all missing values to the start 
+```{r}
+df <- tibble(x = c(5, 2, NA),
+             y = c(2,NA, 2))
+
+rowSums(df)
+arrange(df, desc(is.na(x)))
+arrange(df, -(is.na(x)))
+```
+
+Code simply says, those which are 'TRUE' to being 'NA', then sort them in descending order. 
+
+2. 
+Sort flights to find the most delayed flights. Find the flights that left the earliest. 
+```{r}
+arrange(flights, dep_delay)
+arrange(flights, desc(dep_delay))
+```
+
+
+3. 
+Sort _flights_ to find the fsatest flights. 
+```{r}
+arrange(flights, air_time)
+```
+
+4. 
+Which flights travelled the longsest and which travelled the shortest? 
+```{r}
+# Shortest flights 
+flights %>%
+  arrange(air_time) %>%
+  select(carrier, flight, air_time)
+#Fastest flights 
+flights %>%
+  arrange(-air_time) %>%
+  select(carrier, flight, air_time)
+  
+```
+
+##Select columns with _select()_ 
+Narrowing variables you are actually interested in. Using this function allows you to rapidly zoom inon a useful subset using operations based on variable names. 
+
+Helper functions you can use within _select()_ 
+
+** starts_with(abc): matches names that start with "abc"
+
+* ends_with : gives you the names that end with "xyz"
+
+* contains("ijk") : matches names that contain "ijk"
+
+* matches("(.)\\1") : matches any variables that contain repeated characters
+
+* num_range("x", 1:3) : matches x1, x2, and x3
+
+Use _rename()_ to change variable names onstead of _select()_ 
+```{r}
+rename(flights, tail_num = tailnum)
+```
+
