@@ -1,0 +1,21 @@
+---
+title: "R Notebook: Data Transformation"
+output: html_notebook
+---
+##Intro
+Need to create new variables or summaries or rename the variables or summaries. 
+```{r}
+library(nycflights13)
+library(tidyverse)
+?flights
+nycflights13::flights
+View(flights)
+```
+
+##dplyr basics 
+* _filter()_ pick obervations by their values 
+* _arrange()_ reorder the rows 
+* _select()_ pick variables by their names 
+* _mutate_ create new variables with functions of existing variables 
+* _summarize()_ collapse many values down to one summary 
+* all can be used with _group_by()_ 
